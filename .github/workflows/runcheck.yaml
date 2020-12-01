@@ -14,18 +14,18 @@ jobs:
           docker pull docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
 
       - name: Check
-        run: docker run -v $(pwd):/ docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
+        run: docker run -v $(pwd)/files:/tmp/files docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
 
       - name: Manage Lists
         run: |
-          ls -lathr
-          if [[ $(wc -l potentiallyavailable | cut -d' ' -f1) -gt 0 ]]; then
+          if [[ $(wc -l files/potentiallyavailable | cut -d' ' -f1) -gt 0 ]]; then
             echo "found some to check:"
             cat potentiallyavailable
             git config --global user.name 'nobody'
             git config --global user.email 'nobody@users.noreply.github.com'
             for domainname in $(cat potentiallyavailable); do
-              git add listofnames
+              sed -i "/$domainname/d" files/tocheck
+              git add files/tocheck
               git commit -m "identified $domainname as potentially available, removing from list"
             done
             git push
