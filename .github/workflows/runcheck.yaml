@@ -14,10 +14,11 @@ jobs:
           docker pull docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
 
       - name: Check
-        run: docker run -v ./listofnames:/listofnames -v ./potentiallyavailable:/potentiallyavailable docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
+        run: docker run -v ./:/ docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
 
       - name: Manage Lists
         run: |
+          ls -lathr
           if [[ $(wc -l potentiallyavailable | cut -d' ' -f1) -gt 0 ]]; then
             echo "found some to check:"
             cat potentiallyavailable
