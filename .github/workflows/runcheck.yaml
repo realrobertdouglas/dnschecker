@@ -1,0 +1,32 @@
+name: check process
+
+on:
+  schedule:
+    - cron:  '*/5 * * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Get Image
+        run: |
+          echo "${{ secrets.PKG_PAT }}" | docker login https://docker.pkg.github.com -u ${{ secrets.PKG_USER }} --password-stdin
+          docker pull docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
+
+      - name: Check
+        run: docker run -v $(pwd)/listofnames:/listofnames -v $(pwd)/potentiallyavailable:/potentiallyavailable docker.pkg.github.com/${GITHUB_REPOSITORY}/dnschecker:latest
+
+      - name: Manage Lists
+        run: |
+          if [[ $(wc -l potentiallyavailable | cut -d' ' -f1) -gt 0 ]]; then
+            echo "found some to check:"
+            cat potentiallyavailable
+            git config --global user.name 'nobody'
+            git config --global user.email 'nobody@users.noreply.github.com'
+            for domainname in $(cat potentiallyavailable); do
+              git add listofnames
+              git commit -m "identified $domainname as potentially available, removing from list"
+            done
+            git push
+            exit 1
+          fi
