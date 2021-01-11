@@ -8,6 +8,7 @@
 #   -check for entire already present and replace with current timestamp
 
 import socket, datetime, os
+from tkinter import messagebox
 
 # test internet connection first
 response = os.system("ping -c 1 google.com &> /dev/null")
@@ -33,3 +34,4 @@ for address in addresses:
         output = open("files/potentiallyavailable", "a")
         output.write(address + ' ' + str(datetime.datetime.now()) + '\n')
         output.close()
+        messagebox.showwarning("DNS Checker Alert", "The domain {} is available!".format(address))
